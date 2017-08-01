@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <dimen name="vertical_spacing">20dp</dimen>
+    <dimen name="horizontal_spacing">20dp</dimen>
+    <dimen name="double_horizontal_spacing">40dp</dimen>
+
+    <dimen name="big_text">25sp</dimen>
+    <dimen name="middle_text">18sp</dimen>
+    <dimen name="small_text">10sp</dimen>
+
+    <dimen name="currency_height">60dp</dimen>
+    <dimen name="top_bar_height">75dp</dimen>
+    <dimen name="facebook_login_bar_height">60dp</dimen>
+
+</resources>

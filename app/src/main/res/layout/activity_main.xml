@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parent"
+    android:padding="0dp"
+    android:layout_margin="0dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_white"
+    tools:context="com.alexfome.coinmarket.MainActivity">
+    
+    <RelativeLayout
+        android:layout_alignParentTop="true"
+        android:id="@+id/top_bar"
+        android:background="@color/white"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/top_bar_height">
+
+        <TextView
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="@dimen/double_horizontal_spacing"
+            android:textSize="@dimen/middle_text"
+            android:text="Coin Market"
+            android:textColor="@color/dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/settings_button"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/horizontal_spacing"
+            android:textSize="@dimen/big_text"
+            android:layout_toLeftOf="@+id/refresh_button"
+            android:text="@string/gear"
+            android:textColor="@color/light_dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:id="@+id/refresh_button"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="@dimen/double_horizontal_spacing"
+            android:layout_alignParentRight="true"
+            android:textSize="@dimen/big_text"
+            android:text="@string/refresh"
+            android:textColor="@color/light_dark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+    <ListView
+        android:layout_below="@+id/top_bar"
+        android:layout_marginTop="@dimen/vertical_spacing"
+        android:paddingBottom="@dimen/vertical_spacing"
+        android:paddingLeft="@dimen/horizontal_spacing"
+        android:paddingRight="@dimen/horizontal_spacing"
+        android:divider="@android:color/transparent"
+        android:dividerHeight="@dimen/vertical_spacing"
+        android:scrollbars="none"
+        android:id="@+id/currencies_list"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
+    <LinearLayout
+        android:id="@+id/settings_bar"
+        android:layout_alignParentBottom="true"
+        android:background="@color/white"
+        android:paddingBottom="@dimen/vertical_spacing"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <LinearLayout
+            android:id="@+id/auto_refresh_toggle_button"
+            android:paddingLeft="@dimen/double_horizontal_spacing"
+            android:paddingRight="@dimen/double_horizontal_spacing"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <TextView
+                android:textColor="@color/dark"
+                android:textSize="@dimen/middle_text"
+                android:text="Auto-refresh"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/auto_refresh_state"
+                android:text="OFF"
+                android:layout_gravity="center"
+                android:gravity="right"
+                android:textColor="@color/light_dark"
+                android:textSize="@dimen/middle_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_marginLeft="@dimen/horizontal_spacing"
+            android:layout_marginRight="@dimen/horizontal_spacing"
+            android:background="@color/light_dark"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+
+        <LinearLayout
+            android:id="@+id/sort_toggle_button"
+            android:paddingLeft="@dimen/double_horizontal_spacing"
+            android:paddingRight="@dimen/double_horizontal_spacing"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <TextView
+                android:textColor="@color/dark"
+                android:textSize="@dimen/middle_text"
+                android:text="Sort by"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/sort_type_usd"
+                android:textColor="@color/light_dark"
+                android:textSize="@dimen/middle_text"
+                android:text="USD"
+                android:gravity="right"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/sort_type_percentage"
+                android:textColor="@color/dark"
+                android:textSize="@dimen/middle_text"
+                android:gravity="right"
+                android:text="%"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_marginLeft="@dimen/horizontal_spacing"
+            android:layout_marginRight="@dimen/horizontal_spacing"
+            android:background="@color/light_dark"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+
+        <LinearLayout
+            android:id="@+id/privacy_policy_button"
+            android:paddingLeft="@dimen/double_horizontal_spacing"
+            android:paddingRight="@dimen/double_horizontal_spacing"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="50dp">
+
+            <TextView
+                android:textColor="@color/dark"
+                android:textSize="@dimen/middle_text"
+                android:text="Privacy Policy"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_marginLeft="@dimen/horizontal_spacing"
+            android:layout_marginRight="@dimen/horizontal_spacing"
+            android:background="@color/light_dark"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"/>
+
+        <LinearLayout
+            android:paddingLeft="@dimen/double_horizontal_spacing"
+            android:paddingRight="@dimen/double_horizontal_spacing"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/facebook_login_bar_height">
+
+            <com.facebook.login.widget.LoginButton
+                android:id="@+id/facebook_login"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</RelativeLayout>

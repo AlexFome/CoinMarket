@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="dark_white">#F9F9F8</color>
+    <color name="light_dark">#E3E3E2</color>
+    <color name="dark">#3E3E3C</color>
+
+    <color name="red_1">#F76F8E</color>
+    <color name="red_2">#F77C98</color>
+    <color name="red_3">#F889A2</color>
+    <color name="red_4">#F996AC</color>
+    <color name="red_5">#F9A3B7</color>
+    <color name="red_6">#FAB0C1</color>
+    <color name="red_7">#FBBDCB</color>
+    <color name="red_8">#FCCAD5</color>
+    <color name="red_9">#FCD7E0</color>
+    <color name="red_10">#FDE4EA</color>
+
+    <array name="growth_colors">
+        <item>@color/red_1</item>
+        <item>@color/red_2</item>
+        <item>@color/red_3</item>
+        <item>@color/red_4</item>
+        <item>@color/red_5</item>
+        <item>@color/red_6</item>
+        <item>@color/red_7</item>
+        <item>@color/red_8</item>
+        <item>@color/red_9</item>
+        <item>@color/red_10</item>
+    </array>
+
+</resources>
