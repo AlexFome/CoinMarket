@@ -6,12 +6,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.alexfome.coinmarket.FontManager;
 import com.alexfome.coinmarket.R;
 import com.alexfome.coinmarket.UIManager;
+import com.alexfome.coinmarket.model.Currency;
+import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -30,12 +31,13 @@ public class CurrenciesAdapter extends BaseAdapter {
 
     boolean sortByUSD;
 
-    int extensionHeight = 1000;
+    int extensionHeight = 75;
 
     public CurrenciesAdapter (List<com.alexfome.coinmarket.model.Currency> currencies, Context context) {
         this.currencies = currencies;
         this.context = context;
         layoutInflater = LayoutInflater.from(context);
+        extensionHeight = UIManager.dpToPx(context, extensionHeight);
     }
 
     public void refreshData (List<com.alexfome.coinmarket.model.Currency> currencies) {
@@ -69,6 +71,9 @@ public class CurrenciesAdapter extends BaseAdapter {
             viewHolder.name = view.findViewById(R.id.currency_name);
             viewHolder.delta = view.findViewById(R.id.currency_delta);
             viewHolder.extraBar = view.findViewById(R.id.extraBar);
+            viewHolder.column_1 = (TextView) viewHolder.extraBar.getChildAt(0);
+            viewHolder.column_2 = (TextView) viewHolder.extraBar.getChildAt(1);
+            viewHolder.column_3 = (TextView) viewHolder.extraBar.getChildAt(2);
 
             view.setTag(viewHolder);
             FontManager.setFont(context, view, FontManager.BOLDFONT);
@@ -79,11 +84,11 @@ public class CurrenciesAdapter extends BaseAdapter {
         int[] colors = context.getResources().getIntArray(R.array.growth_colors);
         UIManager.setBackgroundShapeColor(view.getBackground(), colors[i]);
 
-        RelativeLayout.LayoutParams layoutParams;
-        if (viewHolder.extanded) {
-            layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, extensionHeight);
+        LinearLayout.LayoutParams layoutParams;
+        if (currency.selected) {
+            layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, extensionHeight);
         } else {
-            layoutParams = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+            layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
         }
         viewHolder.extraBar.setLayoutParams(layoutParams);
 
@@ -124,27 +129,58 @@ public class CurrenciesAdapter extends BaseAdapter {
             viewHolder.delta.setText(delta);
         }
 
+        viewHolder.column_1.setText(
+                "Market cap"
+                        + "\n\n"
+                        + (currency.getMarket_cap_usd() != 0 ? (int) currency.getMarket_cap_usd() + " $" : "no data")
+        );
+        viewHolder.column_2.setText(
+                "Volume (24h)"
+                        + "\n\n"
+                        + (currency.getVolume_24h_usd() != 0 ? (int) currency.getVolume_24h_usd() + " $" : "no data")
+
+        );
+
+        String availableSupply = currency.getAvailable_supply() != null ? currency.getAvailable_supply() + " $" : "no data";
+        if (availableSupply.charAt(availableSupply.length() - 4) == '.') {
+            availableSupply = availableSupply.substring(0, availableSupply.length() - 4) + " $";
+        }
+        viewHolder.column_3.setText(
+                "Circulating Supply"
+                        + "\n\n"
+                        + availableSupply
+        );
+
         return view;
     }
 
-    public void extandView (View view) {
+    public void toggleView (View view, int position) {
 
-        // IN DEVELOPMENT
+        Currency currency = currencies.get(position);
+        ViewHolder viewHolder = (ViewHolder) view.getTag();
+        if (!currency.selected) {
+            ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(extensionHeight).setDuration(300).start();
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+            //viewHolder.notesBar.setLayoutParams(layoutParams);
+            viewHolder.extanded = true;
+            currency.selected = true;
+            extendedTasks.add(view);
+        } else {
+            ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(0).setDuration(300).start();
+            //ViewPropertyObjectAnimator.animate(viewHolder.notesBar).height(0).setDuration(300).start();
+            currency.selected = false;
+            viewHolder.extanded = false;
+            extendedTasks.remove(view);
+        }
 
-//        ViewHolder viewHolder = (ViewHolder) view.getTag();
-//        if (!viewHolder.extanded) {
-//            ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(extensionHeight).setDuration(300).start();
-//            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-//            //viewHolder.notesBar.setLayoutParams(layoutParams);
-//            viewHolder.extanded = true;
-//            extendedTasks.add(view);
-//        } else {
-//            ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(0).setDuration(300).start();
-//            //ViewPropertyObjectAnimator.animate(viewHolder.notesBar).height(0).setDuration(300).start();
-//            viewHolder.extanded = false;
-//            extendedTasks.remove(view);
-//        }
+    }
 
+    private void closeView (View view) {
+        ViewHolder viewHolder = (ViewHolder) view.getTag();
+        ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(0).setDuration(300).start();
+        //ViewPropertyObjectAnimator.animate(viewHolder.notesBar).height(0).setDuration(300).start();
+        viewHolder.extanded = false;
+        extendedTasks.remove(view);
     }
 
     public void switchToUSDSort () {
@@ -158,8 +194,11 @@ public class CurrenciesAdapter extends BaseAdapter {
     }
 
     public void closeAllOpenedTasks () {
+        for (int i = 0; i < currencies.size(); i++) {
+            currencies.get(i).selected = false;
+        }
         for (int i = 0; i < extendedTasks.size(); i++) {
-            extandView (extendedTasks.get(i));
+            closeView(extendedTasks.get(i));
         }
     }
 
@@ -167,6 +206,9 @@ public class CurrenciesAdapter extends BaseAdapter {
         TextView name;
         TextView delta;
         LinearLayout extraBar;
+        TextView column_1;
+        TextView column_2;
+        TextView column_3;
         boolean extanded;
     }
 }

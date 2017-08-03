@@ -1,5 +1,7 @@
 package com.alexfome.coinmarket.model;
 
+import com.google.gson.annotations.SerializedName;
+
 /**
  * Created by grege on 01.08.2017.
  */
@@ -13,12 +15,14 @@ public class Currency {
     public float price_usd;
     public float price_btc;
     public float market_cap_usd;
-    public float available_supply;
+    public String available_supply;
     public float total_supply;
     public float percent_change_1h;
     public float percent_change_24h;
     public float percent_change_7d;
     public String last_updated;
+    @SerializedName("24h_volume_usd")
+    public float volume_24h_usd;
 
     public boolean selected;
 
@@ -78,11 +82,11 @@ public class Currency {
         this.market_cap_usd = market_cap_usd;
     }
 
-    public float getAvailable_supply() {
+    public String getAvailable_supply() {
         return available_supply;
     }
 
-    public void setAvailable_supply(float available_supply) {
+    public void setAvailable_supply(String available_supply) {
         this.available_supply = available_supply;
     }
 
@@ -132,5 +136,13 @@ public class Currency {
         float deltaUSD = (getPrice_usd() - prevValue);
 
         return deltaUSD;
+    }
+
+    public float getVolume_24h_usd() {
+        return volume_24h_usd;
+    }
+
+    public void setVolume_24h_usd(float volume_24h_usd) {
+        this.volume_24h_usd = volume_24h_usd;
     }
 }

@@ -1,6 +1,7 @@
 package com.alexfome.coinmarket;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -159,6 +160,9 @@ public class MainActivity extends AppCompatActivity {
 
     private void refreshData () {
 
+        final Context context = this;
+        refreshButton.setTextColor(ContextCompat.getColor(context, R.color.dark));
+
         if (handler == null) {
             handler = new Handler();
         }
@@ -168,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
         coinmarketcapApi.getCurrencies().enqueue(new Callback<List<com.alexfome.coinmarket.model.Currency>>() {
             @Override
             public void onResponse(Call<List<com.alexfome.coinmarket.model.Currency>> call, Response<List<com.alexfome.coinmarket.model.Currency>> response) {
+                refreshButton.setTextColor(ContextCompat.getColor(context, R.color.light_dark));
                 if (progressDialog.isShowing()) progressDialog.hide();
                 currencies = response.body();
                 displayData();
@@ -179,6 +184,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<List<com.alexfome.coinmarket.model.Currency>> call, Throwable t) {
+                refreshButton.setTextColor(ContextCompat.getColor(context, R.color.light_dark));
                 if (progressDialog.isShowing()) progressDialog.hide();
                 dataLoadFailed();
             }
@@ -264,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
             currenciesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override
                 public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                    adapter.extandView(view);
+                    adapter.toggleView(view, position);
                 }
             });
         } else {
