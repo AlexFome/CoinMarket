@@ -15,7 +15,6 @@ public class FontManager {
 
     public static final String ROOT = "fonts/";
     public static final String BOLDFONT = ROOT + "Roboto-Bold.ttf";
-    public static final String LIGHTFONT = ROOT + "Roboto-Medium.ttf";
 
     public static Typeface getTypeface(Context context, String font) {
         return Typeface.createFromAsset(context.getAssets(), font);

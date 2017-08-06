@@ -23,8 +23,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alexfome.coinmarket.adapter.CurrenciesAdapter;
-import com.alexfome.coinmarket.model.Ticker;
-import com.alexfome.coinmarket.model.TickerLists;
+import com.alexfome.coinmarket.model.Currencies;
+import com.alexfome.coinmarket.model.Currency;
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private final String AUTO_REFRESH_KEY = "AUTO_REFRESH_KEY";
     private final int AUTO_REFRESH_INTERVAL = 6 * 1000;
 
-    private TickerLists mTickerLists;
+    private Currencies mCurrencies;
 
     @BindView(R.id.toolbar) protected Toolbar mToolbar;
     @BindView(R.id.currencies_list) protected ListView mCurrenciesList;
@@ -70,7 +70,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        mTickerLists = new TickerLists();
+        mCurrencies = new Currencies();
         initListeners();
         setSupportActionBar(mToolbar);
         setAdapter ();
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void refreshData () {
-        mTickerLists.refreshData(new IDataRefreshCallback() {
+        mCurrencies.refreshData(new IDataRefreshCallback() {
             @Override
             public void onSuccess() {
                 displayData();
@@ -165,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void displayData () {
-        List<Ticker> data = mSortByUSD ? mTickerLists.getTopByUSDdeltaValue() : mTickerLists.getTopByPercentage();
+        List<Currency> data = mSortByUSD ? mCurrencies.getTopByUSDdeltaValue() : mCurrencies.getTopByPercentage();
         mAdapter.refreshData(data, mSortByUSD);
     }
 

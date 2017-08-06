@@ -19,16 +19,16 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * Created by grege on 05.08.2017.
  */
 
-public class TickerLists {
+public class Currencies {
 
     private final int TOP_LIST_SIZE = 10;
 
-    private List<Ticker> mTickers = new ArrayList<>();
+    private List<Currency> mCurrencies = new ArrayList<>();
     private ComparatorByPercentage mComparatorByPercentage;
     private ComparatorByUSD mComparatorByUSD;
     private CoinmarketcapApi mCoinmarketcapApi;
 
-    public TickerLists() {
+    public Currencies() {
         initComparators();
         initCoinMarketAPIclient();
     }
@@ -38,25 +38,25 @@ public class TickerLists {
         mComparatorByUSD = new ComparatorByUSD();
     }
 
-    public void setList (List<Ticker> tickers, IDataRefreshCallback callback) {
-        this.mTickers = tickers;
-        for (int i = 0; i < tickers.size(); i++) {
-            this.mTickers.get(i).calculateDeltaUSD();
+    public void setList (List<Currency> currencies, IDataRefreshCallback callback) {
+        mCurrencies = currencies;
+        for (int i = 0; i < currencies.size(); i++) {
+            mCurrencies.get(i).calculateDeltaUSD();
         }
         callback.onSuccess();
     }
 
-    public List<Ticker> getTopByPercentage() {
-        Collections.sort(mTickers, mComparatorByPercentage);
-        List<Ticker> list = new ArrayList<>();
-        list.addAll(mTickers.subList(0, TOP_LIST_SIZE));
+    public List<Currency> getTopByPercentage() {
+        Collections.sort(mCurrencies, mComparatorByPercentage);
+        List<Currency> list = new ArrayList<>();
+        list.addAll(mCurrencies.subList(0, TOP_LIST_SIZE));
         return list;
     }
 
-    public List<Ticker> getTopByUSDdeltaValue() {
-        Collections.sort(mTickers, mComparatorByUSD);
-        List<Ticker> list = new ArrayList<>();
-        list.addAll(mTickers.subList(0, TOP_LIST_SIZE));
+    public List<Currency> getTopByUSDdeltaValue() {
+        Collections.sort(mCurrencies, mComparatorByUSD);
+        List<Currency> list = new ArrayList<>();
+        list.addAll(mCurrencies.subList(0, TOP_LIST_SIZE));
         return list;
     }
 
@@ -69,14 +69,14 @@ public class TickerLists {
     }
 
     public void refreshData (final IDataRefreshCallback callback) {
-        mCoinmarketcapApi.getCurrencies().enqueue(new Callback<List<Ticker>>() {
+        mCoinmarketcapApi.getCurrencies().enqueue(new Callback<List<Currency>>() {
             @Override
-            public void onResponse(Call<List<Ticker>> call, Response<List<Ticker>> response) {
+            public void onResponse(Call<List<Currency>> call, Response<List<Currency>> response) {
                 setList(response.body(), callback);
             }
 
             @Override
-            public void onFailure(Call<List<Ticker>> call, Throwable t) {
+            public void onFailure(Call<List<Currency>> call, Throwable t) {
                 callback.onFail();
             }
         });

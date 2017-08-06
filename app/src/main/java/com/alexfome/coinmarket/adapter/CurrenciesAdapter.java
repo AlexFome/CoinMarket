@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.alexfome.coinmarket.FontManager;
 import com.alexfome.coinmarket.R;
-import com.alexfome.coinmarket.model.Ticker;
+import com.alexfome.coinmarket.model.Currency;
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator;
 
 import java.text.DecimalFormat;
@@ -27,9 +27,9 @@ import java.util.List;
 public class CurrenciesAdapter extends BaseAdapter {
 
     private Context mContext;
-    private List<Ticker> mTickers = new ArrayList<>();
+    private List<Currency> mCurrencies = new ArrayList<>();
     private LayoutInflater mLayoutInflater;
-    private ArrayList<String> mSelectedTickerIDs = new ArrayList<>();
+    private ArrayList<String> mSelectedCurrenciesIDs = new ArrayList<>();
 
     private boolean mSortByUSD;
 
@@ -41,20 +41,20 @@ public class CurrenciesAdapter extends BaseAdapter {
         mExtraInfoBarHeight = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mContext.getResources().getDimension(R.dimen.extra_info_bar_height), mContext.getResources().getDisplayMetrics())); // dp to px
     }
 
-    public void refreshData (List<Ticker> currencies, boolean sortByUSD) {
-        mTickers = currencies;
+    public void refreshData (List<Currency> currencies, boolean sortByUSD) {
+        mCurrencies = currencies;
         mSortByUSD = sortByUSD;
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return mTickers.size();
+        return mCurrencies.size();
     }
 
     @Override
     public Object getItem(int i) {
-        return mTickers.get(i);
+        return mCurrencies.get(i);
     }
 
     @Override
@@ -65,7 +65,7 @@ public class CurrenciesAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
 
-        Ticker ticker = mTickers.get(i);
+        Currency currency = mCurrencies.get(i);
         ViewHolder viewHolder;
         if (view == null) {
             view = mLayoutInflater.inflate(R.layout.currency, viewGroup, false);
@@ -82,14 +82,14 @@ public class CurrenciesAdapter extends BaseAdapter {
             viewHolder = (ViewHolder) view.getTag();
         }
         LinearLayout.LayoutParams extraInfoBarParams;
-        if (mSelectedTickerIDs.contains(ticker.id)) {
+        if (mSelectedCurrenciesIDs.contains(currency.id)) {
             extraInfoBarParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, mExtraInfoBarHeight);
         } else {
             extraInfoBarParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
         }
         viewHolder.extraBar.setLayoutParams(extraInfoBarParams);
-        String name = ticker.name;
-        if (!(ticker.name == null || ticker.name.equals(""))) {
+        String name = currency.name;
+        if (!(currency.name == null || currency.name.equals(""))) {
             int breakpoint = 13;
             if (name.length() > breakpoint) {
                 name = name.substring(0, breakpoint);
@@ -104,14 +104,14 @@ public class CurrenciesAdapter extends BaseAdapter {
             name = mContext.getResources().getString(R.string.no_name);
             viewHolder.name.setText(name);
         }
-        if (!(ticker.symbol == null || ticker.symbol.equals(""))) {
-            viewHolder.symbol.setText(ticker.symbol);
+        if (!(currency.symbol == null || currency.symbol.equals(""))) {
+            viewHolder.symbol.setText(currency.symbol);
         } else {
             viewHolder.symbol.setText(mContext.getResources().getString(R.string.no_symbol));
         }
 
         String delta = "";
-        double change_24h = ticker.percentChange24h;
+        double change_24h = currency.percentChange24h;
         if (change_24h < 0) {
             delta = "- ";
         } else if (change_24h > 0) {
@@ -120,20 +120,20 @@ public class CurrenciesAdapter extends BaseAdapter {
         if (!mSortByUSD) {
             delta = delta + Math.abs(change_24h) + "%";
         } else {
-            double deltaUSD = ticker.deltaUSD;
+            double deltaUSD = currency.deltaUSD;
             String num = new DecimalFormat("##.##").format(Math.abs(deltaUSD));
             delta = delta + num + "$";
         }
         viewHolder.delta.setText(delta);
         viewHolder.delta.setTextColor(ContextCompat.getColor(mContext, R.color.light_dark));
         String price = mContext.getResources().getString(R.string.price) + " ";
-        if (ticker.priceUSD != 0) {
-            price = price + (mSortByUSD ? (int) ticker.priceUSD : new DecimalFormat("##.####").format(Math.abs(ticker.priceUSD))) + " $";
+        if (currency.priceUSD != 0) {
+            price = price + (mSortByUSD ? (int) currency.priceUSD : new DecimalFormat("##.####").format(Math.abs(currency.priceUSD))) + " $";
         } else {
             price = price + mContext.getResources().getString(R.string.no_data);
         }
         viewHolder.column_1.setText(price);
-        String availableSupply = ticker.availableSupply != 0.0 ? (int) ticker.availableSupply + " $" : mContext.getResources().getString(R.string.no_data);
+        String availableSupply = currency.availableSupply != 0.0 ? (int) currency.availableSupply + " $" : mContext.getResources().getString(R.string.no_data);
         viewHolder.column_2.setText(
                 mContext.getResources().getString(R.string.circulating_supply)
                         + " "
@@ -144,14 +144,14 @@ public class CurrenciesAdapter extends BaseAdapter {
     }
 
     public void toggleView (View view, int position) {
-        Ticker ticker = mTickers.get(position);
+        Currency currency = mCurrencies.get(position);
         ViewHolder viewHolder = (ViewHolder) view.getTag();
-        if (!mSelectedTickerIDs.contains(ticker.id)) {
+        if (!mSelectedCurrenciesIDs.contains(currency.id)) {
             ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(mExtraInfoBarHeight).setDuration(300).start();
-            mSelectedTickerIDs.add(ticker.id);
+            mSelectedCurrenciesIDs.add(currency.id);
         } else {
             ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(0).setDuration(300).start();
-            mSelectedTickerIDs.remove(ticker.id);
+            mSelectedCurrenciesIDs.remove(currency.id);
         }
     }
 

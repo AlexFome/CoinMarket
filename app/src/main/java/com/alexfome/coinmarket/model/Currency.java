@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * Created by grege on 01.08.2017.
  */
 
-public class Ticker {
+public class Currency {
 
     public String id;
     public String name;
