@@ -1,7 +1,6 @@
 package com.alexfome.coinmarket;
 
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -24,13 +23,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.alexfome.coinmarket.adapter.CurrenciesAdapter;
-import com.alexfome.coinmarket.model.Currencies;
-import com.alexfome.coinmarket.model.Currency;
+import com.alexfome.coinmarket.model.Ticker;
+import com.alexfome.coinmarket.model.TickerLists;
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
-import com.facebook.FacebookSdk;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 
@@ -45,98 +43,83 @@ import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Currencies currencies;
+    private final String SHARED_PREFERENCES_NAME = "SHARED_PREFERENCES_NAME";
+    private final String SORT_BY_USD_KEY = "SORT_BY_USD_KEY";
+    private final String AUTO_REFRESH_KEY = "AUTO_REFRESH_KEY";
+    private final int AUTO_REFRESH_INTERVAL = 6 * 1000;
 
-    @BindView(R.id.toolbar) protected Toolbar toolbar;
-    @BindView(R.id.currencies_list) protected ListView currenciesList;
-    @BindView(R.id.settings_bar) protected LinearLayout settingsBar;
-    @BindView(R.id.sort_type_percentage) protected TextView sortByPercentageButton;
-    @BindView(R.id.sort_type_usd) protected TextView sortByUSDButton;
-    @BindView(R.id.auto_refresh_state) protected Switch autoRefreshState;
-    @BindView(R.id.facebook_login) protected LoginButton loginButton;
-    private ProgressDialog progressDialog;
-    private CurrenciesAdapter adapter;
+    private TickerLists mTickerLists;
 
-    private boolean settingsOpened;
-
-    private int settingsBarHeight = 233;
-    private int AUTO_REFRESH_INTERVAL = 6 * 1000;
-
-    private boolean sortByUSD;
-    private boolean autoRefresh;
-
-    private String sharedPreferencesName = "sharedPreferencesName";
-    private String sortByUSDKey = "sortByUSDKey";
-    private String autoRefreshKey = "autoRefreshKey";
-
-    SharedPreferences sharedPreferences;
-    CallbackManager callbackManager;
-
-    private Handler handler;
-    private Runnable refresh;
+    @BindView(R.id.toolbar) protected Toolbar mToolbar;
+    @BindView(R.id.currencies_list) protected ListView mCurrenciesList;
+    @BindView(R.id.settings_bar) protected LinearLayout mSettingsBar;
+    @BindView(R.id.sort_type_percentage) protected TextView mSortByPercentageButton;
+    @BindView(R.id.sort_type_usd) protected TextView mSortByUSDButton;
+    @BindView(R.id.auto_refresh_state) protected Switch mAutoRefreshState;
+    @BindView(R.id.facebook_login) protected LoginButton mLoginButton;
+    private ProgressDialog mProgressDialog;
+    private CurrenciesAdapter mAdapter;
+    private boolean mSettingsOpened;
+    private int mSettingsBarHeight;
+    private boolean mSortByUSD;
+    private boolean mAutoRefresh;
+    private SharedPreferences mSharedPreferences;
+    private CallbackManager mCallbackManager;
+    private Handler mHandler;
+    private Runnable mRefresh;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
-        currencies = new Currencies();
-
+        mTickerLists = new TickerLists();
         initListeners();
-        setToolbar ();
+        setSupportActionBar(mToolbar);
         setAdapter ();
+        initAutoRefreshRunnable();
         initFacebookLogin();
         setFonts();
         prepareSettingsBar();
         applySavedSettings ();
         initProgressBar ();
-        initAutoRefreshHandler ();
-
         refreshData();
-
+        if (mAutoRefresh) {
+            mHandler.postDelayed(mRefresh, AUTO_REFRESH_INTERVAL);
+        }
     }
 
     protected void onRefreshClick () {
-        if (!autoRefresh) {
+        if (!mAutoRefresh) {
             refreshData();
         }
     }
 
     private void refreshData () {
-
-        final Context context = this;
-        currencies.refreshData(new Callback<List<Currency>>() {
+        mTickerLists.refreshData(new Callback<List<Ticker>>() {
             @Override
-            public void onResponse(Call<List<Currency>> call, Response<List<Currency>> response) {
-                currencies.setList(response.body());
+            public void onResponse(Call<List<Ticker>> call, Response<List<Ticker>> response) {
+                mTickerLists.setList(response.body());
                 displayData();
-
-                if (autoRefresh) {
-                    handler.postDelayed(refresh, AUTO_REFRESH_INTERVAL);
-                }
-                if (progressDialog.isShowing()) {
-                    progressDialog.hide();
-                }
+                hideProgressBar();
             }
 
             @Override
-            public void onFailure(Call<List<Currency>> call, Throwable t) {
+            public void onFailure(Call<List<Ticker>> call, Throwable t) {
                 dataLoadFailed();
-
-                if (autoRefresh) {
-                    handler.postDelayed(refresh, AUTO_REFRESH_INTERVAL);
-                }
-                if (progressDialog.isShowing()) {
-                    progressDialog.hide();
-                }
+                hideProgressBar();
             }
         });
+    }
 
+    private void hideProgressBar () {
+        if (mProgressDialog.isShowing()) {
+            mProgressDialog.hide();
+        }
     }
 
     protected void toggleSettings () {
-        if (settingsOpened) {
+        if (mSettingsOpened) {
             closeSettings();
         } else {
             openSettings();
@@ -145,63 +128,58 @@ public class MainActivity extends AppCompatActivity {
 
     private void startAutoRefresh() {
         refreshData();
+        mHandler.postDelayed(mRefresh, AUTO_REFRESH_INTERVAL);
     }
 
     private void stopAutoRefresh() {
-        handler.removeCallbacks(refresh);
+        mHandler.removeCallbacks(mRefresh);
     }
 
     @OnClick(R.id.sort_toggle_button)
     protected void toggleSortingType () {
-        if (sortByUSD) {
-            sortByUSD = false;
-            sortByPercentageButton.setTextColor(ContextCompat.getColor(this, R.color.dark));
-            sortByUSDButton.setTextColor(ContextCompat.getColor(this, R.color.light_dark));
-            adapter.switchToPercentageSort();
+        if (mSortByUSD) {
+            mSortByUSD = false;
+            mSortByPercentageButton.setTextColor(ContextCompat.getColor(this, R.color.dark));
+            mSortByUSDButton.setTextColor(ContextCompat.getColor(this, R.color.light_dark));
             displayData();
         } else {
-            sortByUSD = true;
-            sortByPercentageButton.setTextColor(ContextCompat.getColor(this, R.color.light_dark));
-            sortByUSDButton.setTextColor(ContextCompat.getColor(this, R.color.dark));
-            adapter.switchToUSDSort();
+            mSortByUSD = true;
+            mSortByPercentageButton.setTextColor(ContextCompat.getColor(this, R.color.light_dark));
+            mSortByUSDButton.setTextColor(ContextCompat.getColor(this, R.color.dark));
             displayData();
         }
-        sharedPreferences.edit().putBoolean(sortByUSDKey, sortByUSD).apply();
+        mSharedPreferences.edit().putBoolean(SORT_BY_USD_KEY, mSortByUSD).apply();
     }
 
     @OnClick(R.id.privacy_policy_button)
     protected void openPrivacyPolicy () {
-        Uri uri = Uri.parse("https://docs.google.com/document/d/1mHdCPVbVPDMXBwESwRpxzBwxfxy6TbzGn02OGP7FyYM/edit?usp=sharing");
+        Uri uri = Uri.parse(getResources().getString(R.string.privacy_policy_url));
         Intent intent = new Intent(Intent.ACTION_VIEW, uri);
         startActivity(intent);
     }
 
     private void openSettings () {
-        settingsOpened = true;
-        ViewPropertyObjectAnimator.animate(settingsBar).bottomMargin(0).setDuration(300).start();
+        mSettingsOpened = true;
+        ViewPropertyObjectAnimator.animate(mSettingsBar).bottomMargin(0).setDuration(300).start();
     }
 
     private void closeSettings () {
-        settingsOpened = false;
-        ViewPropertyObjectAnimator.animate(settingsBar).bottomMargin(-settingsBarHeight).setDuration(300).start();
+        mSettingsOpened = false;
+        ViewPropertyObjectAnimator.animate(mSettingsBar).bottomMargin(-mSettingsBarHeight).setDuration(300).start();
     }
 
     private void displayData () {
-        if (!sortByUSD) {
-            adapter.refreshData(currencies.getTopByPercentage());
-        } else {
-            adapter.refreshData(currencies.getTopByUSDdeltaValue());
-        }
+        List<Ticker> data = mSortByUSD ? mTickerLists.getTopByUSDdeltaValue() : mTickerLists.getTopByPercentage();
+        mAdapter.refreshData(data, mSortByUSD);
     }
 
     private void dataLoadFailed () {
-        Toast.makeText(this, "Please, turn on the internet", Toast.LENGTH_LONG).show();
+        Toast.makeText(this, getResources().getString(R.string.please_turn_on_the_internet), Toast.LENGTH_LONG).show();
     }
 
     private void initFacebookLogin () {
-        FacebookSdk.sdkInitialize(getApplicationContext());
-        callbackManager = CallbackManager.Factory.create();
-        loginButton.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+        mCallbackManager = CallbackManager.Factory.create();
+        mLoginButton.registerCallback(mCallbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
 
@@ -220,43 +198,39 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setAdapter () {
-        adapter = new CurrenciesAdapter(this);
-        currenciesList.setAdapter(adapter);
-        currenciesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        mAdapter = new CurrenciesAdapter(this);
+        mCurrenciesList.setAdapter(mAdapter);
+        mCurrenciesList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                adapter.toggleView(view, position);
+                mAdapter.toggleView(view, position);
             }
         });
     }
 
     private void applySavedSettings() {
-        sharedPreferences = getSharedPreferences(sharedPreferencesName, MODE_PRIVATE);
-        sortByUSD = sharedPreferences.getBoolean(sortByUSDKey, false);
-        autoRefresh = sharedPreferences.getBoolean(autoRefreshKey, false);
-
-        if (sortByUSD) {
-            sortByUSDButton.setTextColor(ContextCompat.getColor(this, R.color.dark));
-            sortByPercentageButton.setTextColor(ContextCompat.getColor(this, R.color.light_dark));
-            adapter.switchToUSDSort();
+        mSharedPreferences = getSharedPreferences(SHARED_PREFERENCES_NAME, MODE_PRIVATE);
+        mSortByUSD = mSharedPreferences.getBoolean(SORT_BY_USD_KEY, false);
+        mAutoRefresh = mSharedPreferences.getBoolean(AUTO_REFRESH_KEY, false);
+        if (mSortByUSD) {
+            mSortByUSDButton.setTextColor(ContextCompat.getColor(this, R.color.dark));
+            mSortByPercentageButton.setTextColor(ContextCompat.getColor(this, R.color.light_dark));
         }
-        if (autoRefresh) {
-            autoRefreshState.setChecked(true);
-        }
+        mAutoRefreshState.setChecked(mAutoRefresh);
     }
 
     private void prepareSettingsBar () {
-        settingsBarHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, settingsBarHeight, getResources().getDisplayMetrics());
-        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) settingsBar.getLayoutParams();
-        layoutParams.setMargins(0,0,0, -settingsBarHeight);
-        settingsBar.setLayoutParams(layoutParams);
+        mSettingsBarHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, getResources().getDimension(R.dimen.settings_bar_height), getResources().getDisplayMetrics());
+        RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams) mSettingsBar.getLayoutParams();
+        layoutParams.setMargins(0,0,0, -mSettingsBarHeight);
+        mSettingsBar.setLayoutParams(layoutParams);
     }
 
     private void initProgressBar () {
-        progressDialog = new ProgressDialog(this);
-        progressDialog.setTitle("Loading");
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-        progressDialog.show();
+        mProgressDialog = new ProgressDialog(this);
+        mProgressDialog.setTitle(getResources().getString(R.string.loading));
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        mProgressDialog.show();
     }
 
     private void setFonts () {
@@ -264,26 +238,26 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initListeners () {
-        autoRefreshState.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        mAutoRefreshState.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (!isChecked) {
-                    autoRefresh = false;
+                mAutoRefresh = isChecked;
+                if (!mAutoRefresh) {
                     stopAutoRefresh();
                 } else {
-                    autoRefresh = true;
                     startAutoRefresh();
                 }
-                sharedPreferences.edit().putBoolean(autoRefreshKey, autoRefresh).apply();
+                mSharedPreferences.edit().putBoolean(AUTO_REFRESH_KEY, mAutoRefresh).apply();
             }
         });
     }
 
-    private void initAutoRefreshHandler () {
-        handler = new Handler();
-        refresh = new Runnable() {
+    private void initAutoRefreshRunnable () {
+        mHandler = new Handler();
+        mRefresh = new Runnable() {
             @Override
             public void run() {
                 refreshData();
+                mHandler.postDelayed(mRefresh, AUTO_REFRESH_INTERVAL);
             }
         };
     }
@@ -291,21 +265,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed()
     {
-        if (settingsOpened) {
+        if (mSettingsOpened) {
             toggleSettings();
         } else {
             super.onBackPressed();
         }
     }
 
-    private void setToolbar () {
-        setSupportActionBar(toolbar);
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        callbackManager.onActivityResult(requestCode, resultCode, data);
+        mCallbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -330,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onPause() {
-        if (autoRefresh) {
+        if (mAutoRefresh) {
             stopAutoRefresh();
         }
         super.onPause();
@@ -338,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        if (autoRefresh) {
+        if (mAutoRefresh && mHandler != null && mRefresh != null) {
             startAutoRefresh();
         }
         super.onResume();

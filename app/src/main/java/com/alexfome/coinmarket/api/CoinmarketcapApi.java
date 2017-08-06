@@ -1,6 +1,6 @@
 package com.alexfome.coinmarket.api;
 
-import com.alexfome.coinmarket.model.Currency;
+import com.alexfome.coinmarket.model.Ticker;
 
 import java.util.List;
 
@@ -13,5 +13,5 @@ import retrofit2.http.GET;
 
 public interface CoinmarketcapApi {
     @GET("ticker/")
-    Call<List<Currency>> getCurrencies();
+    Call<List<Ticker>> getCurrencies();
 }

@@ -7,10 +7,13 @@
 
     <dimen name="big_text">25sp</dimen>
     <dimen name="middle_text">18sp</dimen>
-    <dimen name="small_text">16sp</dimen>
+    <dimen name="small_text">12sp</dimen>
 
     <dimen name="currency_height">60dp</dimen>
     <dimen name="global_data_bar_height">75dp</dimen>
     <dimen name="facebook_login_bar_height">60dp</dimen>
+
+    <dimen name="settings_bar_height">250dp</dimen>
+    <dimen name="extra_info_bar_height">15dp</dimen>
 
 </resources>

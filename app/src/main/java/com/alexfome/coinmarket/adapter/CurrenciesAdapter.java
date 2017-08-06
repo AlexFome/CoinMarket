@@ -12,9 +12,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.alexfome.coinmarket.FontManager;
-import com.alexfome.coinmarket.Graph;
 import com.alexfome.coinmarket.R;
-import com.alexfome.coinmarket.model.Currency;
+import com.alexfome.coinmarket.model.Ticker;
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator;
 
 import java.text.DecimalFormat;
@@ -27,36 +26,35 @@ import java.util.List;
 
 public class CurrenciesAdapter extends BaseAdapter {
 
-    private Context context;
-    private List<Currency> currencies = new ArrayList<>();
-    private LayoutInflater layoutInflater;
-    private ArrayList<String> selectedCurrenciesIDs = new ArrayList<>();
+    private Context mContext;
+    private List<Ticker> mTickers = new ArrayList<>();
+    private LayoutInflater mLayoutInflater;
+    private ArrayList<String> mSelectedTickerIDs = new ArrayList<>();
 
-    private boolean sortByUSD;
+    private boolean mSortByUSD;
 
-    private int extraInfoBarHeight = 40;
-    private int graphBarHeight = 100;
+    private int mExtraInfoBarHeight;
 
     public CurrenciesAdapter (Context context) {
-        this.context = context;
-        layoutInflater = LayoutInflater.from(context);
-        extraInfoBarHeight = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, extraInfoBarHeight, context.getResources().getDisplayMetrics())); // dp to px
-        graphBarHeight = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, graphBarHeight, context.getResources().getDisplayMetrics()));
+        this.mContext = context;
+        mLayoutInflater = LayoutInflater.from(mContext);
+        mExtraInfoBarHeight = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, mContext.getResources().getDimension(R.dimen.extra_info_bar_height), mContext.getResources().getDisplayMetrics())); // dp to px
     }
 
-    public void refreshData (List<Currency> currencies) {
-        this.currencies = currencies;
+    public void refreshData (List<Ticker> currencies, boolean sortByUSD) {
+        mTickers = currencies;
+        mSortByUSD = sortByUSD;
         notifyDataSetChanged();
     }
 
     @Override
     public int getCount() {
-        return currencies.size();
+        return mTickers.size();
     }
 
     @Override
     public Object getItem(int i) {
-        return currencies.get(i);
+        return mTickers.get(i);
     }
 
     @Override
@@ -67,10 +65,10 @@ public class CurrenciesAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
 
-        Currency currency = currencies.get(i);
+        Ticker ticker = mTickers.get(i);
         ViewHolder viewHolder;
         if (view == null) {
-            view = layoutInflater.inflate(R.layout.currency, viewGroup, false);
+            view = mLayoutInflater.inflate(R.layout.currency, viewGroup, false);
             viewHolder = new ViewHolder();
             viewHolder.name = view.findViewById(R.id.currency_name);
             viewHolder.symbol = view.findViewById(R.id.currency_symbol);
@@ -78,35 +76,20 @@ public class CurrenciesAdapter extends BaseAdapter {
             viewHolder.extraBar = view.findViewById(R.id.extraBar);
             viewHolder.column_1 = (TextView) viewHolder.extraBar.getChildAt(0);
             viewHolder.column_2 = (TextView) viewHolder.extraBar.getChildAt(1);
-            viewHolder.graph = view.findViewById(R.id.graph);
-
             view.setTag(viewHolder);
-            FontManager.setFont(context, view, FontManager.BOLDFONT);
+            FontManager.setFont(mContext, view, FontManager.BOLDFONT);
         } else {
             viewHolder = (ViewHolder) view.getTag();
         }
-
-        int[] colors = context.getResources().getIntArray(R.array.growth_colors);
-        int color = colors[i];
-        color = ContextCompat.getColor(context, R.color.light_dark);
-
         LinearLayout.LayoutParams extraInfoBarParams;
-        LinearLayout.LayoutParams graphLayoutParams;
-        if (selectedCurrenciesIDs.contains(currency.getId())) {
-            extraInfoBarParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, extraInfoBarHeight);
-            graphLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, graphBarHeight);
-            viewHolder.graph.removeAllViews();
-            viewHolder.graph.addView(new Graph(context, currency.getMockData()));
+        if (mSelectedTickerIDs.contains(ticker.id)) {
+            extraInfoBarParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, mExtraInfoBarHeight);
         } else {
             extraInfoBarParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-            graphLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
-            //viewHolder.graph.removeAllViews();
         }
         viewHolder.extraBar.setLayoutParams(extraInfoBarParams);
-        viewHolder.graph.setLayoutParams(graphLayoutParams);
-
-        String name = currency.getName();
-        if (!(currency.getName() == null || currency.getName().equals(""))) {
+        String name = ticker.name;
+        if (!(ticker.name == null || ticker.name.equals(""))) {
             int breakpoint = 13;
             if (name.length() > breakpoint) {
                 name = name.substring(0, breakpoint);
@@ -118,52 +101,42 @@ public class CurrenciesAdapter extends BaseAdapter {
                 viewHolder.name.setText(name);
             }
         } else {
-            name = "no name";
+            name = mContext.getResources().getString(R.string.no_name);
             viewHolder.name.setText(name);
         }
-
-        if (!(currency.getSymbol() == null || currency.getSymbol().equals(""))) {
-            viewHolder.symbol.setText(currency.getSymbol());
+        if (!(ticker.symbol == null || ticker.symbol.equals(""))) {
+            viewHolder.symbol.setText(ticker.symbol);
         } else {
-            viewHolder.symbol.setText("no symbol");
+            viewHolder.symbol.setText(mContext.getResources().getString(R.string.no_symbol));
         }
 
         String delta = "";
-        if (!sortByUSD) {
-            double change_24h = currency.getPercentChange24h();
-            if (change_24h < 0) {
-                delta = "- ";
-            } else if (change_24h > 0) {
-                delta = "+ ";
-            }
+        double change_24h = ticker.percentChange24h;
+        if (change_24h < 0) {
+            delta = "- ";
+        } else if (change_24h > 0) {
+            delta = "+ ";
+        }
+        if (!mSortByUSD) {
             delta = delta + Math.abs(change_24h) + "%";
-            viewHolder.delta.setText(delta);
         } else {
-            double change_24h = currency.getPercentChange24h();
-            if (change_24h < 0) {
-                delta = "- ";
-            } else if (change_24h > 0) {
-                delta = "+ ";
-            }
-
-            double deltaUSD = currency.getDeltaUSD();
-
+            double deltaUSD = ticker.deltaUSD;
             String num = new DecimalFormat("##.##").format(Math.abs(deltaUSD));
             delta = delta + num + "$";
-            viewHolder.delta.setText(delta);
         }
-        viewHolder.delta.setTextColor(color);
-
-        viewHolder.column_1.setText(
-                "PRICE: " + (currency.getPriceUSD() != 0 ? (int) currency.getMarketCapUSD() + " $" : "no data")
-        );
-
-        String availableSupply = currency.getAvailableSupply() != null ? currency.getAvailableSupply() + " $" : "no data";
-        if (availableSupply.charAt(availableSupply.length() - 4) == '.') {
-            availableSupply = availableSupply.substring(0, availableSupply.length() - 4) + " $";
+        viewHolder.delta.setText(delta);
+        viewHolder.delta.setTextColor(ContextCompat.getColor(mContext, R.color.light_dark));
+        String price = mContext.getResources().getString(R.string.price) + " ";
+        if (ticker.priceUSD != 0) {
+            price = price + (mSortByUSD ? (int) ticker.priceUSD : new DecimalFormat("##.####").format(Math.abs(ticker.priceUSD))) + " $";
+        } else {
+            price = price + mContext.getResources().getString(R.string.no_data);
         }
+        viewHolder.column_1.setText(price);
+        String availableSupply = ticker.availableSupply != 0.0 ? (int) ticker.availableSupply + " $" : mContext.getResources().getString(R.string.no_data);
         viewHolder.column_2.setText(
-                "CIRCULATING SUPPLY: "
+                mContext.getResources().getString(R.string.circulating_supply)
+                        + " "
                         + availableSupply
         );
 
@@ -171,32 +144,15 @@ public class CurrenciesAdapter extends BaseAdapter {
     }
 
     public void toggleView (View view, int position) {
-
-        Currency currency = currencies.get(position);
+        Ticker ticker = mTickers.get(position);
         ViewHolder viewHolder = (ViewHolder) view.getTag();
-        if (!selectedCurrenciesIDs.contains(currency.getId())) {
-            ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(extraInfoBarHeight).setDuration(300).start();
-            ViewPropertyObjectAnimator.animate(viewHolder.graph).height(graphBarHeight).setDuration(300).start();
-            selectedCurrenciesIDs.add(currency.getId());
-
-            Graph graph = new Graph(context, currency.getMockData());
-            viewHolder.graph.addView(graph);
+        if (!mSelectedTickerIDs.contains(ticker.id)) {
+            ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(mExtraInfoBarHeight).setDuration(300).start();
+            mSelectedTickerIDs.add(ticker.id);
         } else {
             ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(0).setDuration(300).start();
-            ViewPropertyObjectAnimator.animate(viewHolder.graph).height(0).setDuration(300).start();
-            selectedCurrenciesIDs.remove(currency.getId());
-
-            //viewHolder.graph.removeAllViews();
+            mSelectedTickerIDs.remove(ticker.id);
         }
-
-    }
-
-    public void switchToUSDSort () {
-        sortByUSD = true;
-    }
-
-    public void switchToPercentageSort () {
-        sortByUSD = false;
     }
 
     private class ViewHolder {
@@ -204,7 +160,6 @@ public class CurrenciesAdapter extends BaseAdapter {
         TextView symbol;
         TextView delta;
         RelativeLayout extraBar;
-        LinearLayout graph;
         TextView column_1;
         TextView column_2;
     }

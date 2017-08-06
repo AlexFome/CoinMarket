@@ -1,6 +1,6 @@
 package com.alexfome.coinmarket.comparator;
 
-import com.alexfome.coinmarket.model.Currency;
+import com.alexfome.coinmarket.model.Ticker;
 
 import java.util.Comparator;
 
@@ -8,12 +8,12 @@ import java.util.Comparator;
  * Created by grege on 05.08.2017.
  */
 
-public class ComparatorByPercentage implements Comparator<Currency> {
+public class ComparatorByPercentage implements Comparator<Ticker> {
     @Override
-    public int compare(Currency currency_1, Currency currency_2) {
-        if (currency_1.getPercentChange24h() > currency_2.getPercentChange24h()) {
+    public int compare(Ticker ticker_1, Ticker ticker_2) {
+        if (ticker_1.percentChange24h > ticker_2.percentChange24h) {
             return -1;
-        } else if (currency_1.getPercentChange24h() < currency_2.getPercentChange24h()) {
+        } else if (ticker_1.percentChange24h < ticker_2.percentChange24h) {
             return 1;
         } else {
             return 0;
