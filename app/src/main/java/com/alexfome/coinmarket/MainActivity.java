@@ -37,9 +37,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -96,16 +93,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void refreshData () {
-        mTickerLists.refreshData(new Callback<List<Ticker>>() {
+        mTickerLists.refreshData(new IDataRefreshCallback() {
             @Override
-            public void onResponse(Call<List<Ticker>> call, Response<List<Ticker>> response) {
-                mTickerLists.setList(response.body());
+            public void onSuccess() {
                 displayData();
                 hideProgressBar();
             }
 
             @Override
-            public void onFailure(Call<List<Ticker>> call, Throwable t) {
+            public void onFail() {
                 dataLoadFailed();
                 hideProgressBar();
             }

@@ -1,5 +1,6 @@
 package com.alexfome.coinmarket.model;
 
+import com.alexfome.coinmarket.IDataRefreshCallback;
 import com.alexfome.coinmarket.api.CoinmarketcapApi;
 import com.alexfome.coinmarket.comparator.ComparatorByPercentage;
 import com.alexfome.coinmarket.comparator.ComparatorByUSD;
@@ -8,7 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import retrofit2.Call;
 import retrofit2.Callback;
+import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
@@ -35,11 +38,12 @@ public class TickerLists {
         mComparatorByUSD = new ComparatorByUSD();
     }
 
-    public void setList (List<Ticker> tickers) {
+    public void setList (List<Ticker> tickers, IDataRefreshCallback callback) {
         this.mTickers = tickers;
         for (int i = 0; i < tickers.size(); i++) {
             this.mTickers.get(i).calculateDeltaUSD();
         }
+        callback.onSuccess();
     }
 
     public List<Ticker> getTopByPercentage() {
@@ -64,8 +68,18 @@ public class TickerLists {
         mCoinmarketcapApi = retrofit.create(CoinmarketcapApi.class);
     }
 
-    public void refreshData (Callback<List<Ticker>> callback) {
-        mCoinmarketcapApi.getCurrencies().enqueue(callback);
+    public void refreshData (final IDataRefreshCallback callback) {
+        mCoinmarketcapApi.getCurrencies().enqueue(new Callback<List<Ticker>>() {
+            @Override
+            public void onResponse(Call<List<Ticker>> call, Response<List<Ticker>> response) {
+                setList(response.body(), callback);
+            }
+
+            @Override
+            public void onFailure(Call<List<Ticker>> call, Throwable t) {
+                callback.onFail();
+            }
+        });
     }
 
 }
