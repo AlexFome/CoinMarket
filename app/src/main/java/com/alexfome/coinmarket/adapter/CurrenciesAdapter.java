@@ -1,16 +1,19 @@
 package com.alexfome.coinmarket.adapter;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.alexfome.coinmarket.FontManager;
+import com.alexfome.coinmarket.Graph;
 import com.alexfome.coinmarket.R;
-import com.alexfome.coinmarket.UIManager;
 import com.alexfome.coinmarket.model.Currency;
 import com.bartoszlipinski.viewpropertyobjectanimator.ViewPropertyObjectAnimator;
 
@@ -25,22 +28,23 @@ import java.util.List;
 public class CurrenciesAdapter extends BaseAdapter {
 
     private Context context;
-    private List<com.alexfome.coinmarket.model.Currency> currencies;
-    LayoutInflater layoutInflater;
-    ArrayList<View> extendedTasks = new ArrayList<>();
+    private List<Currency> currencies = new ArrayList<>();
+    private LayoutInflater layoutInflater;
+    private ArrayList<String> selectedCurrenciesIDs = new ArrayList<>();
 
-    boolean sortByUSD;
+    private boolean sortByUSD;
 
-    int extensionHeight = 75;
+    private int extraInfoBarHeight = 40;
+    private int graphBarHeight = 100;
 
-    public CurrenciesAdapter (List<com.alexfome.coinmarket.model.Currency> currencies, Context context) {
-        this.currencies = currencies;
+    public CurrenciesAdapter (Context context) {
         this.context = context;
         layoutInflater = LayoutInflater.from(context);
-        extensionHeight = UIManager.dpToPx(context, extensionHeight);
+        extraInfoBarHeight = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, extraInfoBarHeight, context.getResources().getDisplayMetrics())); // dp to px
+        graphBarHeight = (int) (TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, graphBarHeight, context.getResources().getDisplayMetrics()));
     }
 
-    public void refreshData (List<com.alexfome.coinmarket.model.Currency> currencies) {
+    public void refreshData (List<Currency> currencies) {
         this.currencies = currencies;
         notifyDataSetChanged();
     }
@@ -63,17 +67,18 @@ public class CurrenciesAdapter extends BaseAdapter {
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
 
-        com.alexfome.coinmarket.model.Currency currency = currencies.get(i);
+        Currency currency = currencies.get(i);
         ViewHolder viewHolder;
         if (view == null) {
             view = layoutInflater.inflate(R.layout.currency, viewGroup, false);
             viewHolder = new ViewHolder();
             viewHolder.name = view.findViewById(R.id.currency_name);
+            viewHolder.symbol = view.findViewById(R.id.currency_symbol);
             viewHolder.delta = view.findViewById(R.id.currency_delta);
             viewHolder.extraBar = view.findViewById(R.id.extraBar);
             viewHolder.column_1 = (TextView) viewHolder.extraBar.getChildAt(0);
             viewHolder.column_2 = (TextView) viewHolder.extraBar.getChildAt(1);
-            viewHolder.column_3 = (TextView) viewHolder.extraBar.getChildAt(2);
+            viewHolder.graph = view.findViewById(R.id.graph);
 
             view.setTag(viewHolder);
             FontManager.setFont(context, view, FontManager.BOLDFONT);
@@ -82,31 +87,50 @@ public class CurrenciesAdapter extends BaseAdapter {
         }
 
         int[] colors = context.getResources().getIntArray(R.array.growth_colors);
-        UIManager.setBackgroundShapeColor(view.getBackground(), colors[i]);
+        int color = colors[i];
+        color = ContextCompat.getColor(context, R.color.light_dark);
 
-        LinearLayout.LayoutParams layoutParams;
-        if (currency.selected) {
-            layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, extensionHeight);
+        LinearLayout.LayoutParams extraInfoBarParams;
+        LinearLayout.LayoutParams graphLayoutParams;
+        if (selectedCurrenciesIDs.contains(currency.getId())) {
+            extraInfoBarParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, extraInfoBarHeight);
+            graphLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, graphBarHeight);
+            viewHolder.graph.removeAllViews();
+            viewHolder.graph.addView(new Graph(context, currency.getMockData()));
         } else {
-            layoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+            extraInfoBarParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+            graphLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+            //viewHolder.graph.removeAllViews();
         }
-        viewHolder.extraBar.setLayoutParams(layoutParams);
+        viewHolder.extraBar.setLayoutParams(extraInfoBarParams);
+        viewHolder.graph.setLayoutParams(graphLayoutParams);
 
         String name = currency.getName();
-        int breakpoint = 11;
-        if (name.length() > breakpoint) {
-            name = name.substring(0, breakpoint);
-            if (name.charAt(name.length() - 1) == ' ') {
-                name = name.substring(0, breakpoint - 1);
+        if (!(currency.getName() == null || currency.getName().equals(""))) {
+            int breakpoint = 13;
+            if (name.length() > breakpoint) {
+                name = name.substring(0, breakpoint);
+                if (name.charAt(name.length() - 1) == ' ') {
+                    name = name.substring(0, breakpoint - 1);
+                }
+                viewHolder.name.setText(name + "...");
+            } else {
+                viewHolder.name.setText(name);
             }
-            viewHolder.name.setText(name + "...");
         } else {
+            name = "no name";
             viewHolder.name.setText(name);
+        }
+
+        if (!(currency.getSymbol() == null || currency.getSymbol().equals(""))) {
+            viewHolder.symbol.setText(currency.getSymbol());
+        } else {
+            viewHolder.symbol.setText("no symbol");
         }
 
         String delta = "";
         if (!sortByUSD) {
-            float change_24h = currency.getPercent_change_24h();
+            double change_24h = currency.getPercentChange24h();
             if (change_24h < 0) {
                 delta = "- ";
             } else if (change_24h > 0) {
@@ -115,39 +139,31 @@ public class CurrenciesAdapter extends BaseAdapter {
             delta = delta + Math.abs(change_24h) + "%";
             viewHolder.delta.setText(delta);
         } else {
-            float change_24h = currency.getPercent_change_24h();
+            double change_24h = currency.getPercentChange24h();
             if (change_24h < 0) {
                 delta = "- ";
             } else if (change_24h > 0) {
                 delta = "+ ";
             }
 
-            float deltaUSD = currency.calculateDeltaUSD();
+            double deltaUSD = currency.getDeltaUSD();
 
             String num = new DecimalFormat("##.##").format(Math.abs(deltaUSD));
             delta = delta + num + "$";
             viewHolder.delta.setText(delta);
         }
+        viewHolder.delta.setTextColor(color);
 
         viewHolder.column_1.setText(
-                "Market cap"
-                        + "\n\n"
-                        + (currency.getMarket_cap_usd() != 0 ? (int) currency.getMarket_cap_usd() + " $" : "no data")
-        );
-        viewHolder.column_2.setText(
-                "Volume (24h)"
-                        + "\n\n"
-                        + (currency.getVolume_24h_usd() != 0 ? (int) currency.getVolume_24h_usd() + " $" : "no data")
-
+                "PRICE: " + (currency.getPriceUSD() != 0 ? (int) currency.getMarketCapUSD() + " $" : "no data")
         );
 
-        String availableSupply = currency.getAvailable_supply() != null ? currency.getAvailable_supply() + " $" : "no data";
+        String availableSupply = currency.getAvailableSupply() != null ? currency.getAvailableSupply() + " $" : "no data";
         if (availableSupply.charAt(availableSupply.length() - 4) == '.') {
             availableSupply = availableSupply.substring(0, availableSupply.length() - 4) + " $";
         }
-        viewHolder.column_3.setText(
-                "Circulating Supply"
-                        + "\n\n"
+        viewHolder.column_2.setText(
+                "CIRCULATING SUPPLY: "
                         + availableSupply
         );
 
@@ -158,57 +174,39 @@ public class CurrenciesAdapter extends BaseAdapter {
 
         Currency currency = currencies.get(position);
         ViewHolder viewHolder = (ViewHolder) view.getTag();
-        if (!currency.selected) {
-            ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(extensionHeight).setDuration(300).start();
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-            //viewHolder.notesBar.setLayoutParams(layoutParams);
-            viewHolder.extanded = true;
-            currency.selected = true;
-            extendedTasks.add(view);
+        if (!selectedCurrenciesIDs.contains(currency.getId())) {
+            ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(extraInfoBarHeight).setDuration(300).start();
+            ViewPropertyObjectAnimator.animate(viewHolder.graph).height(graphBarHeight).setDuration(300).start();
+            selectedCurrenciesIDs.add(currency.getId());
+
+            Graph graph = new Graph(context, currency.getMockData());
+            viewHolder.graph.addView(graph);
         } else {
             ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(0).setDuration(300).start();
-            //ViewPropertyObjectAnimator.animate(viewHolder.notesBar).height(0).setDuration(300).start();
-            currency.selected = false;
-            viewHolder.extanded = false;
-            extendedTasks.remove(view);
+            ViewPropertyObjectAnimator.animate(viewHolder.graph).height(0).setDuration(300).start();
+            selectedCurrenciesIDs.remove(currency.getId());
+
+            //viewHolder.graph.removeAllViews();
         }
 
-    }
-
-    private void closeView (View view) {
-        ViewHolder viewHolder = (ViewHolder) view.getTag();
-        ViewPropertyObjectAnimator.animate(viewHolder.extraBar).height(0).setDuration(300).start();
-        //ViewPropertyObjectAnimator.animate(viewHolder.notesBar).height(0).setDuration(300).start();
-        viewHolder.extanded = false;
-        extendedTasks.remove(view);
     }
 
     public void switchToUSDSort () {
         sortByUSD = true;
-        notifyDataSetChanged();
     }
 
     public void switchToPercentageSort () {
         sortByUSD = false;
-        notifyDataSetChanged();
-    }
-
-    public void closeAllOpenedTasks () {
-        for (int i = 0; i < currencies.size(); i++) {
-            currencies.get(i).selected = false;
-        }
-        for (int i = 0; i < extendedTasks.size(); i++) {
-            closeView(extendedTasks.get(i));
-        }
     }
 
     private class ViewHolder {
         TextView name;
+        TextView symbol;
         TextView delta;
-        LinearLayout extraBar;
+        RelativeLayout extraBar;
+        LinearLayout graph;
         TextView column_1;
         TextView column_2;
-        TextView column_3;
-        boolean extanded;
     }
+
 }

@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CoinMarket</string>
+    <string name="app_name">Coin Market</string>
 
     <string name="facebook_app_id">1243243072471415</string>
     <string name="fb_login_protocol_scheme">fb1243243072471415</string>

@@ -1,6 +1,10 @@
 package com.alexfome.coinmarket.model;
 
+import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
+
+import java.util.ArrayList;
+import java.util.Random;
 
 /**
  * Created by grege on 01.08.2017.
@@ -8,23 +12,34 @@ import com.google.gson.annotations.SerializedName;
 
 public class Currency {
 
-    public String id;
-    public String name;
-    public String symbol;
-    public float rank;
-    public float price_usd;
-    public float price_btc;
-    public float market_cap_usd;
-    public String available_supply;
-    public float total_supply;
-    public float percent_change_1h;
-    public float percent_change_24h;
-    public float percent_change_7d;
-    public String last_updated;
-    @SerializedName("24h_volume_usd")
-    public float volume_24h_usd;
-
-    public boolean selected;
+    private String id;
+    private String name;
+    private String symbol;
+    private double rank;
+    @SerializedName("price_usd")
+    private double priceUSD;
+    @SerializedName("price_btc")
+    private double priceBTC;
+    @SerializedName("market_cap_usd")
+    private double marketCapUSD;
+    @SerializedName("available_supply")
+    private String availableSupply;
+    @SerializedName("total_supply")
+    private double totalSupply;
+    @SerializedName("percent_change_1h")
+    private double percentChange1h;
+    @SerializedName("percent_change_24h")
+    private double percentChange24h;
+    @SerializedName("percent_change_7d")
+    private double percentChange7d;
+    @SerializedName("last_updated")
+    private String lastUpdated;
+    @SerializedName("volume_24h_usd")
+    private double volume24hUSD;
+    @Expose (serialize = false, deserialize = false)
+    private double deltaUSD;
+    @Expose (serialize = false, deserialize = false)
+    private ArrayList<Double> mockData;
 
     public String getId() {
         return id;
@@ -50,99 +65,123 @@ public class Currency {
         this.symbol = symbol;
     }
 
-    public float getRank() {
+    public double getRank() {
         return rank;
     }
 
-    public void setRank(float rank) {
+    public void setRank(double rank) {
         this.rank = rank;
     }
 
-    public float getPrice_usd() {
-        return price_usd;
+    public double getPriceUSD() {
+        return priceUSD;
     }
 
-    public void setPrice_usd(float price_usd) {
-        this.price_usd = price_usd;
+    public void setPriceUSD(double priceUSD) {
+        this.priceUSD = priceUSD;
     }
 
-    public float getPrice_btc() {
-        return price_btc;
+    public double getPriceBTC() {
+        return priceBTC;
     }
 
-    public void setPrice_btc(float price_btc) {
-        this.price_btc = price_btc;
+    public void setPriceBTC(double priceBTC) {
+        this.priceBTC = priceBTC;
     }
 
-    public float getMarket_cap_usd() {
-        return market_cap_usd;
+    public double getMarketCapUSD() {
+        return marketCapUSD;
     }
 
-    public void setMarket_cap_usd(float market_cap_usd) {
-        this.market_cap_usd = market_cap_usd;
+    public void setMarketCapUSD(double marketCapUSD) {
+        this.marketCapUSD = marketCapUSD;
     }
 
-    public String getAvailable_supply() {
-        return available_supply;
+    public String getAvailableSupply() {
+        return availableSupply;
     }
 
-    public void setAvailable_supply(String available_supply) {
-        this.available_supply = available_supply;
+    public void setAvailableSupply(String availableSupply) {
+        this.availableSupply = availableSupply;
     }
 
-    public float getTotal_supply() {
-        return total_supply;
+    public double getTotalSupply() {
+        return totalSupply;
     }
 
-    public void setTotal_supply(float total_supply) {
-        this.total_supply = total_supply;
+    public void setTotalSupply(double totalSupply) {
+        this.totalSupply = totalSupply;
     }
 
-    public float getPercent_change_1h() {
-        return percent_change_1h;
+    public double getPercentChange1h() {
+        return percentChange1h;
     }
 
-    public void setPercent_change_1h(float percent_change_1h) {
-        this.percent_change_1h = percent_change_1h;
+    public void setPercentChange1h(double percentChange1h) {
+        this.percentChange1h = percentChange1h;
     }
 
-    public float getPercent_change_24h() {
-        return percent_change_24h;
+    public double getPercentChange24h() {
+        return percentChange24h;
     }
 
-    public void setPercent_change_24h(float percent_change_24h) {
-        this.percent_change_24h = percent_change_24h;
+    public void setPercentChange24h(double percentChange24h) {
+        this.percentChange24h = percentChange24h;
     }
 
-    public float getPercent_change_7d() {
-        return percent_change_7d;
+    public double getPercentChange7d() {
+        return percentChange7d;
     }
 
-    public void setPercent_change_7d(float percent_change_7d) {
-        this.percent_change_7d = percent_change_7d;
+    public void setPercentChange7d(double percentChange7d) {
+        this.percentChange7d = percentChange7d;
     }
 
-    public String getLast_updated() {
-        return last_updated;
+    public String getLastUpdated() {
+        return lastUpdated;
     }
 
-    public void setLast_updated(String last_updated) {
-        this.last_updated = last_updated;
+    public void setLastUpdated(String lastUpdated) {
+        this.lastUpdated = lastUpdated;
     }
 
-    public float calculateDeltaUSD () {
-        float factor = 1 + (getPercent_change_24h() / 100);
-        float prevValue = getPrice_usd() / factor;
-        float deltaUSD = (getPrice_usd() - prevValue);
+    public double getVolume24hUSD() {
+        return volume24hUSD;
+    }
 
+    public void setVolume24hUSD(double volume24hUSD) {
+        this.volume24hUSD = volume24hUSD;
+    }
+
+    public double getDeltaUSD() {
         return deltaUSD;
     }
 
-    public float getVolume_24h_usd() {
-        return volume_24h_usd;
+    public void setDeltaUSD(double deltaUSD) {
+        this.deltaUSD = deltaUSD;
     }
 
-    public void setVolume_24h_usd(float volume_24h_usd) {
-        this.volume_24h_usd = volume_24h_usd;
+    public void calculateDeltaUSD () {
+        double factor = 1 + (getPercentChange24h() / 100);
+        double prevValue = getPriceUSD() / factor;
+        deltaUSD = (getPriceUSD() - prevValue);
+    }
+
+    public void generateMockData () {
+        // API does not provide price statistics, so we generate data randomly to draw a graph
+
+        Random random = new Random();
+        mockData = new ArrayList<>();
+        int steps = 24 * 4;
+        for (int i = 0; i < steps - 1; i++) {
+            double value = random.nextFloat() * priceUSD;
+            mockData.add(value);
+        }
+        mockData.add(priceUSD);
+
+    }
+
+    public ArrayList<Double> getMockData() {
+        return mockData;
     }
 }

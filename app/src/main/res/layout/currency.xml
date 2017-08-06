@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:background="@drawable/currency"
+    android:background="@color/white"
     android:layout_height="wrap_content">
 
     <LinearLayout
@@ -10,69 +10,82 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <TextView
+        <LinearLayout
+            android:orientation="vertical"
             android:paddingTop="@dimen/vertical_spacing"
             android:paddingBottom="@dimen/vertical_spacing"
-
-            android:id="@+id/currency_name"
-            android:paddingLeft="@dimen/horizontal_spacing"
-            android:text="Bitcoin"
-            android:textColor="@color/white"
-            android:textSize="@dimen/big_text"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content">
+            <TextView
+                android:id="@+id/currency_name"
+                android:paddingLeft="@dimen/horizontal_spacing"
+                android:text="Bitcoin"
+                android:textColor="@color/dark"
+                android:textSize="@dimen/big_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/currency_symbol"
+                android:paddingLeft="@dimen/horizontal_spacing"
+                android:text="BTC"
+                android:textColor="@color/light_dark"
+                android:textSize="@dimen/small_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
 
         <TextView
-            android:paddingTop="25dp"
-            android:paddingBottom="@dimen/vertical_spacing"
-
             android:id="@+id/currency_delta"
             android:paddingLeft="@dimen/horizontal_spacing"
-            android:text="+ 1.16%"
-            android:textColor="@color/white"
             android:paddingRight="@dimen/horizontal_spacing"
+            android:text="+ 1.16%"
+            android:textColor="@color/dark"
             android:layout_gravity="end"
             android:textAlignment="viewEnd"
             android:textSize="@dimen/middle_text"
+            android:gravity="center_vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent" />
 
     </LinearLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:orientation="horizontal"
         android:id="@+id/extraBar"
-        android:gravity="center"
-        android:background="@drawable/extra_currency_info"
+        android:paddingLeft="@dimen/horizontal_spacing"
+        android:paddingRight="@dimen/horizontal_spacing"
         android:layout_width="match_parent"
         android:layout_height="0dp">
         
         <TextView
-            android:text="Market cap\n\n$45,412,159,962\n\n16,485,637 BTC"
-            android:textColor="@color/dark"
-            android:textAlignment="center"
+            android:text="price: 145$"
+            android:textColor="@color/light_dark"
             android:textSize="@dimen/small_text"
-            android:layout_weight="1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:text="Volume (24h)\n\n$956,844,000\n\n16,485,637 BTC"
-            android:textColor="@color/dark"
-            android:textAlignment="center"
-            android:textSize="@dimen/small_text"
-            android:layout_weight="1"
-            android:layout_width="0dp"
+            android:layout_alignParentLeft="true"
+            android:layout_centerVertical="true"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 
         <TextView
             android:text="Circulating Supply\n\n16,485,637 BTC\n\n"
-            android:textColor="@color/dark"
-            android:textAlignment="center"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:textColor="@color/light_dark"
             android:textSize="@dimen/small_text"
-            android:layout_weight="1"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/graph"
+        android:paddingLeft="@dimen/horizontal_spacing"
+        android:paddingRight="@dimen/horizontal_spacing"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="0dp">
 
     </LinearLayout>
 

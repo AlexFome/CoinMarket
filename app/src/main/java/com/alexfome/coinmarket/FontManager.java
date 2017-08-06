@@ -14,7 +14,6 @@ import android.widget.TextView;
 public class FontManager {
 
     public static final String ROOT = "fonts/";
-    public static final String ICONFONT = ROOT + "fontawesome-webfont.ttf";
     public static final String BOLDFONT = ROOT + "Roboto-Bold.ttf";
     public static final String LIGHTFONT = ROOT + "Roboto-Medium.ttf";
 
@@ -22,7 +21,7 @@ public class FontManager {
         return Typeface.createFromAsset(context.getAssets(), font);
     }
 
-    public static void setFont (Context context, View view, String font) { // Goes through all view's children and applies font to textviews and edittexts
+    public static void setFont (Context context, View view, String font) {
         if (view instanceof ViewGroup) {
             ViewGroup viewGroup = (ViewGroup) view;
             for (int i = 0; i < viewGroup.getChildCount(); i++) {

@@ -10,7 +10,7 @@
     <dimen name="small_text">10sp</dimen>
 
     <dimen name="currency_height">60dp</dimen>
-    <dimen name="top_bar_height">75dp</dimen>
+    <dimen name="global_data_bar_height">75dp</dimen>
     <dimen name="facebook_login_bar_height">60dp</dimen>
 
 </resources>
